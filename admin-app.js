@@ -32,8 +32,7 @@ async function loadUsers() {
       <td>${escapeHtml(user.name || "—")}</td>
       <td>${escapeHtml(user.email || "—")}</td>
       <td>${user.roles?.includes("admin") || user.role === "admin" ? "Admin" : "Felhasználó"}</td>
-      <td>${user.lastSignInAt ? new Date(user.lastSignInAt).toLocaleString("hu-HU") : "Még nem lépett be"}</td>
-    </tr>`).join("") || '<tr><td colspan="4">Még nincs felhasználó.</td></tr>';
+    </tr>`).join("") || '<tr><td colspan="3">Még nincs felhasználó.</td></tr>';
   showStatus(`${data.users.length} felhasználó`);
 }
 

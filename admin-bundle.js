@@ -1118,8 +1118,7 @@ async function loadUsers() {
       <td>${escapeHtml(user.name || "\u2014")}</td>
       <td>${escapeHtml(user.email || "\u2014")}</td>
       <td>${user.roles?.includes("admin") || user.role === "admin" ? "Admin" : "Felhaszn\xE1l\xF3"}</td>
-      <td>${user.lastSignInAt ? new Date(user.lastSignInAt).toLocaleString("hu-HU") : "M\xE9g nem l\xE9pett be"}</td>
-    </tr>`).join("") || '<tr><td colspan="4">M\xE9g nincs felhaszn\xE1l\xF3.</td></tr>';
+    </tr>`).join("") || '<tr><td colspan="3">M\xE9g nincs felhaszn\xE1l\xF3.</td></tr>';
   showStatus(`${data.users.length} felhaszn\xE1l\xF3`);
 }
 function escapeHtml(value) {
