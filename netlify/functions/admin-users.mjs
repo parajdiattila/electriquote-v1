@@ -23,7 +23,12 @@ function publicUser(user) {
 
 export default async (request) => {
   try {
-    const currentUser = await getUser();
+    let currentUser;
+    try {
+      currentUser = await getUser();
+    } catch {
+      return json({ error: "Bejelentkezés szükséges." }, 401);
+    }
     if (!currentUser) return json({ error: "Bejelentkezés szükséges." }, 401);
     if (!isAdmin(currentUser)) return json({ error: "Ehhez admin jogosultság szükséges." }, 403);
 

@@ -19,7 +19,12 @@ export default async (request) => {
   const id = new URL(request.url).searchParams.get("id");
 
   try {
-    const user = await getUser();
+    let user;
+    try {
+      user = await getUser();
+    } catch {
+      return json({ error: "Bejelentkezés szükséges." }, 401);
+    }
     if (!user || (!user.roles?.includes("member") && !user.roles?.includes("admin") && user.role !== "admin")) {
       return json({ error: "Bejelentkezés szükséges." }, 401);
     }
