@@ -39,7 +39,7 @@ export default async (request) => {
       const user = await admin.createUser({
         email,
         password: temporaryPassword,
-        data: { user_metadata: { full_name: name } },
+        data: { app_metadata: { roles: ["member"] }, user_metadata: { full_name: name } },
       });
       await requestPasswordRecovery(email);
       return json({ user: publicUser(user) }, 201);

@@ -1,4 +1,5 @@
 import { getStore } from "@netlify/blobs";
+import { getUser } from "@netlify/identity";
 
 const store = getStore("electriquote-history", { consistency: "strong" });
 
@@ -18,6 +19,10 @@ export default async (request) => {
   const id = new URL(request.url).searchParams.get("id");
 
   try {
+    const user = await getUser();
+    if (!user || (!user.roles?.includes("member") && !user.roles?.includes("admin") && user.role !== "admin")) {
+      return json({ error: "Bejelentkezés szükséges." }, 401);
+    }
     if (request.method === "GET") {
       const listed = await store.list();
       const quotes = (await Promise.all(

@@ -1,2 +1,38 @@
 [functions]
   directory = "netlify/functions"
+
+[[redirects]]
+  from = "/admin.html"
+  to = "/admin.html"
+  status = 200
+  force = true
+  conditions = { Role = ["admin"] }
+
+[[redirects]]
+  from = "/admin.html"
+  to = "/login.html"
+  status = 401
+
+[[redirects]]
+  from = "/index.html"
+  to = "/index.html"
+  status = 200
+  force = true
+  conditions = { Role = ["member", "admin"] }
+
+[[redirects]]
+  from = "/index.html"
+  to = "/login.html"
+  status = 401
+
+[[redirects]]
+  from = "/"
+  to = "/"
+  status = 200
+  force = true
+  conditions = { Role = ["member", "admin"] }
+
+[[redirects]]
+  from = "/"
+  to = "/login.html"
+  status = 401
