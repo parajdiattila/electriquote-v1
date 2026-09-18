@@ -752,6 +752,52 @@ var login = async (email, password) => {
     throw AuthError.from(error);
   }
 };
+var signup = async (email, password, data) => {
+  if (!isBrowser2()) {
+    const identityUrl = getServerIdentityUrl();
+    const cookies = getCookies();
+    let res;
+    try {
+      res = await fetchWithTimeout(`${identityUrl}/signup`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ email, password, data })
+      });
+    } catch (error) {
+      throw AuthError.from(error);
+    }
+    if (!res.ok) {
+      const errorBody = await res.json().catch(() => ({}));
+      throw new AuthError(errorBody.msg ?? `Signup failed (${String(res.status)})`, res.status);
+    }
+    const responseData = await res.json();
+    const user = toUser(responseData);
+    if (responseData.confirmed_at) {
+      const accessToken = responseData.access_token;
+      if (accessToken) {
+        setAuthCookies(cookies, accessToken, responseData.refresh_token);
+      }
+    }
+    return user;
+  }
+  const client = getClient();
+  try {
+    const response = await client.signup(email, password, data);
+    const user = toUser(response);
+    if (response.confirmed_at) {
+      const jwt = await response.jwt?.();
+      if (jwt) {
+        const refreshToken = response.tokenDetails?.()?.refresh_token;
+        setBrowserAuthCookies(jwt, refreshToken);
+      }
+      startTokenRefresh();
+      emitAuthEvent(AUTH_EVENTS.LOGIN, user);
+    }
+    return user;
+  } catch (error) {
+    throw AuthError.from(error);
+  }
+};
 var handleAuthCallback = async () => {
   if (!isBrowser2()) return null;
   const hash = window.location.hash.substring(1);
@@ -1036,11 +1082,26 @@ var acceptInvite = async (token, password) => {
 // auth-app.js
 var loginForm = document.querySelector("#loginForm");
 var passwordForm = document.querySelector("#passwordForm");
+var signupForm = document.querySelector("#signupForm");
 var message = document.querySelector("#message");
+var showSignupBtn = document.querySelector("#showSignupBtn");
+var showLoginBtn = document.querySelector("#showLoginBtn");
 function show(messageText, kind = "") {
   message.textContent = messageText;
   message.dataset.kind = kind;
 }
+showSignupBtn?.addEventListener("click", () => {
+  loginForm.hidden = true;
+  signupForm.hidden = false;
+  document.querySelector("#authTitle").textContent = "\xDAj fi\xF3k l\xE9trehoz\xE1sa";
+  document.querySelector("#authDescription").textContent = "Regisztr\xE1ci\xF3 ut\xE1n haszn\xE1lhatod az ElectriQuote aj\xE1nlatk\xE9sz\xEDt\u0151j\xE9t.";
+});
+showLoginBtn?.addEventListener("click", () => {
+  signupForm.hidden = true;
+  loginForm.hidden = false;
+  document.querySelector("#authTitle").textContent = "Bel\xE9p\xE9s sz\xFCks\xE9ges";
+  document.querySelector("#authDescription").textContent = "Az aj\xE1nlatok \xE9s az el\u0151zm\xE9nyek csak bejelentkez\xE9s ut\xE1n \xE9rhet\u0151k el.";
+});
 loginForm.addEventListener("submit", async (event) => {
   event.preventDefault();
   try {
@@ -1048,6 +1109,16 @@ loginForm.addEventListener("submit", async (event) => {
     window.location.href = "/";
   } catch (error) {
     show(error.message || "Sikertelen bel\xE9p\xE9s.", "error");
+  }
+});
+signupForm?.addEventListener("submit", async (event) => {
+  event.preventDefault();
+  try {
+    const user = await signup(signupForm.email.value.trim(), signupForm.password.value, { full_name: signupForm.name.value.trim() });
+    show(user.emailVerified ? "A fi\xF3k l\xE9trej\xF6tt, bel\xE9phetsz." : "Ellen\u0151rizd az email-fi\xF3kodat a regisztr\xE1ci\xF3 befejez\xE9s\xE9hez.", "success");
+    signupForm.reset();
+  } catch (error) {
+    show(error.message || "A regisztr\xE1ci\xF3 sikertelen.", "error");
   }
 });
 passwordForm.addEventListener("submit", async (event) => {
