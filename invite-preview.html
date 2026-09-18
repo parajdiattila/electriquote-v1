@@ -1,21 +1,94 @@
 <!doctype html>
 <html lang="hu">
 <head>
-  <meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>ElectriQuote – Meghívó email előnézet</title>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Meghívó email előnézete · ElectriQuote</title>
   <style>
-    :root{font-family:Inter,ui-sans-serif,system-ui,sans-serif;color:#17263a;background:#f4f8fc}*{box-sizing:border-box}body{margin:0;min-height:100vh;padding:34px 18px;background:radial-gradient(circle at 10% 0,#d9efff,transparent 38%),#f7faff}main{width:min(760px,100%);margin:auto}.top{display:flex;align-items:center;justify-content:space-between;gap:16px;margin-bottom:22px}.brand{display:flex;align-items:center;gap:10px;color:#0b568e;font-weight:850;letter-spacing:.04em}.mark{display:grid;place-items:center;width:38px;height:38px;border-radius:12px;background:linear-gradient(145deg,#0877c4,#0d4d89);color:white;font-size:20px}.language{padding:9px 12px;border:1px solid #c7d9e9;border-radius:10px;background:white;font:inherit}.card{background:#fff;border:1px solid #d7e5f2;border-radius:22px;padding:26px;box-shadow:0 18px 50px #123b5d16}.meta{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:22px}.meta div{padding:13px;border-radius:12px;background:#f4f8fc;color:#5f748a;font-size:13px}.meta strong{display:block;color:#1b334d;margin-top:4px}.mail{border:1px solid #dae6f0;border-radius:16px;overflow:hidden}.mail-head{padding:20px 22px;background:#0d4d89;color:white}.mail-head h1{margin:0;font-size:23px}.mail-body{padding:24px;color:#314961;line-height:1.65}.mail-body h2{color:#123e68;margin-top:0}.cta{display:inline-block;margin:12px 0 18px;padding:13px 18px;border-radius:10px;background:#0e72b8;color:white;text-decoration:none;font-weight:800}.note{padding:13px;border-left:4px solid #31a483;background:#eefaf6;color:#426b62;font-size:14px}.footer{margin-top:22px;color:#71849a;font-size:13px}@media(max-width:600px){.meta{grid-template-columns:1fr}.top{align-items:flex-start;flex-direction:column}}
+    :root { color-scheme: light; font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif; }
+    * { box-sizing: border-box; }
+    body { margin: 0; min-height: 100vh; padding: 28px 16px; color: #10233f; background: radial-gradient(circle at top left, #dff4ff 0, #eef5ff 36%, #f8fafc 75%); }
+    .shell { width: min(760px, 100%); margin: 0 auto; }
+    .topline { display: flex; align-items: center; justify-content: space-between; gap: 16px; margin-bottom: 18px; }
+    .brand { display: flex; align-items: center; gap: 11px; font-weight: 800; letter-spacing: -.02em; }
+    .brand-mark { display: grid; place-items: center; width: 38px; height: 38px; border-radius: 12px; color: #fff; background: linear-gradient(135deg, #0b73e0, #29b3e6); box-shadow: 0 8px 20px #147adf33; }
+    .badge { padding: 8px 12px; border: 1px solid #b9d8f7; border-radius: 999px; color: #1464a5; background: #ffffffaa; font-size: 12px; font-weight: 700; }
+    .card { overflow: hidden; border: 1px solid #d9e5f2; border-radius: 24px; background: #fff; box-shadow: 0 24px 70px #1a4b731c; }
+    .meta { padding: 23px 26px 20px; border-bottom: 1px solid #e6edf5; }
+    .eyebrow { margin: 0 0 9px; color: #66809b; font-size: 12px; font-weight: 800; letter-spacing: .08em; text-transform: uppercase; }
+    h1 { margin: 0; color: #10233e; font-size: clamp(22px, 4vw, 30px); line-height: 1.16; letter-spacing: -.04em; }
+    .meta-row { display: flex; flex-wrap: wrap; gap: 10px 22px; margin-top: 17px; color: #5f7186; font-size: 13px; }
+    .meta-row strong { color: #213a59; }
+    .email { margin: 24px; overflow: hidden; border: 1px solid #dce8f5; border-radius: 17px; }
+    .email-head { padding: 22px 22px 20px; color: #fff; background: linear-gradient(135deg, #075fc1, #149dde); }
+    .email-brand { font-size: 18px; font-weight: 800; }
+    .subject { margin: 16px 0 0; font-size: 18px; font-weight: 750; line-height: 1.4; }
+    .email-body { padding: 23px; background: #fbfdff; }
+    .intro { margin: 0 0 19px; color: #526b84; font-size: 14px; line-height: 1.65; }
+    .language { margin: 14px 0; padding: 17px 18px; border: 1px solid #dce8f5; border-radius: 14px; background: #fff; }
+    .language-label { margin: 0 0 10px; color: #0b6fcf; font-size: 11px; font-weight: 800; letter-spacing: .1em; text-transform: uppercase; }
+    .language p { margin: 7px 0; color: #263f5c; font-size: 14px; line-height: 1.62; }
+    .cta { display: inline-block; margin: 8px 0 18px; padding: 13px 17px; border-radius: 11px; color: #fff; background: #0877d6; font-size: 14px; font-weight: 800; text-decoration: none; box-shadow: 0 8px 18px #0877d633; }
+    .closing { margin: 0; color: #536b84; font-size: 14px; line-height: 1.65; }
+    .footer { padding: 16px 24px 20px; border-top: 1px solid #e6edf5; color: #74869a; font-size: 12px; line-height: 1.55; background: #fff; }
+    @media (max-width: 520px) { body { padding: 16px 10px; } .topline { align-items: flex-start; flex-direction: column; } .meta, .email-body { padding: 18px; } .email { margin: 16px; } .email-head { padding: 19px; } }
   </style>
 </head>
 <body>
-  <main>
-    <div class="top"><div class="brand"><span class="mark">⚡</span> ElectriQuote</div><select id="language" class="language" aria-label="Email nyelve"><option value="hu">Magyar</option><option value="ro">Română</option><option value="en">English</option></select></div>
-    <section class="card"><div class="meta"><div>Címzett<strong>test@example.invalid</strong></div><div>Állapot<strong>Előnézet – email nem lett elküldve</strong></div></div><article class="mail"><div class="mail-head"><h1 id="subject">Meghívás az ElectriQuote-ba</h1></div><div class="mail-body"><h2 id="title">Szia!</h2><p id="intro">Meghívást kaptál az ElectriQuote ajánlatkészítő használatára.</p><p id="detail">A meghívás elfogadásához állítsd be a saját jelszavadat. Ezután beléphetsz az ajánlatkészítőbe, és láthatod a közös mentett ajánlatokat.</p><a class="cta" href="/login.html#invite_token=PREVIEW_TOKEN">Fiók aktiválása</a><div class="note" id="security">Ha nem vártad ezt az emailt, hagyd figyelmen kívül.</div><p id="signature">Üdvözlettel,<br><strong>ElectriQuote</strong></p></div></article><div class="footer" id="footer">Ez az oldal csak előnézet. Tesztcímzett: test@example.invalid.</div></section>
+  <main class="shell">
+    <div class="topline">
+      <div class="brand"><span class="brand-mark">⚡</span><span>ElectriQuote</span></div>
+      <span class="badge">Háromnyelvű email</span>
+    </div>
+
+    <section class="card">
+      <div class="meta">
+        <p class="eyebrow">Meghívó előnézete</p>
+        <h1>Egy emailben mindhárom nyelv</h1>
+        <div class="meta-row">
+          <span>Címzett: <strong>test@example.invalid</strong></span>
+          <span>Állapot: <strong>előnézet, email nem lett elküldve</strong></span>
+        </div>
+      </div>
+
+      <article class="email">
+        <header class="email-head">
+          <div class="email-brand">ElectriQuote</div>
+          <p class="subject">Meghívás az ElectriQuote-ba / Invitație ElectriQuote / Invitation to ElectriQuote</p>
+        </header>
+        <div class="email-body">
+          <p class="intro">Az emailben nincs nyelvválasztó: a címzett ugyanabban az üzenetben kapja meg mindhárom nyelvű tájékoztatást.</p>
+
+          <section class="language">
+            <p class="language-label">Magyar</p>
+            <p>Szia!</p>
+            <p>Meghívást kaptál az ElectriQuote ajánlatkészítő használatára.</p>
+            <p>A meghívás elfogadásához állítsd be a saját jelszavadat. Ezután beléphetsz az ajánlatkészítőbe, és láthatod a közös mentett ajánlatokat.</p>
+            <p>Ha nem vártad ezt az emailt, hagyd figyelmen kívül.</p>
+          </section>
+
+          <section class="language">
+            <p class="language-label">Română</p>
+            <p>Bună!</p>
+            <p>Ai fost invitat să folosești generatorul de devize ElectriQuote.</p>
+            <p>Pentru a accepta invitația, setează-ți parola. Apoi te poți conecta la aplicație și vei vedea istoricul comun al ofertelor salvate.</p>
+            <p>Dacă nu te așteptai la acest email, îl poți ignora.</p>
+          </section>
+
+          <section class="language">
+            <p class="language-label">English</p>
+            <p>Hello!</p>
+            <p>You have been invited to use the ElectriQuote estimate builder.</p>
+            <p>To accept the invitation, set your own password. Then you can sign in and see the shared history of saved quotes.</p>
+            <p>If you did not expect this email, you can ignore it.</p>
+          </section>
+
+          <a class="cta" href="/login.html#invite_token=PREVIEW_TOKEN">Fiók aktiválása / Activează contul / Activate account</a>
+          <p class="closing">Üdvözlettel / Cu stimă / Best regards,<br><strong>ElectriQuote</strong></p>
+        </div>
+        <footer class="footer">Ez csak egy tesztelőnézet. A címzett tesztcím, valódi meghívó email nem lett elküldve.</footer>
+      </article>
+    </section>
   </main>
-  <script>
-    const copy={hu:{subject:"Meghívás az ElectriQuote-ba",title:"Szia!",intro:"Meghívást kaptál az ElectriQuote ajánlatkészítő használatára.",detail:"A meghívás elfogadásához állítsd be a saját jelszavadat. Ezután beléphetsz az ajánlatkészítőbe, és láthatod a közös mentett ajánlatokat.",cta:"Fiók aktiválása",security:"Ha nem vártad ezt az emailt, hagyd figyelmen kívül.",signature:"Üdvözlettel,",footer:"Ez az oldal csak előnézet. Tesztcímzett: test@example.invalid."},ro:{subject:"Invitație ElectriQuote",title:"Bună!",intro:"Ai fost invitat să folosești generatorul de devize ElectriQuote.",detail:"Pentru a accepta invitația, setează-ți parola. Apoi te poți conecta la aplicație și vei vedea istoricul comun al ofertelor salvate.",cta:"Activează contul",security:"Dacă nu te așteptai la acest email, îl poți ignora.",signature:"Cu stimă,",footer:"Aceasta este doar o previzualizare. Destinatar de test: test@example.invalid."},en:{subject:"Invitation to ElectriQuote",title:"Hello!",intro:"You have been invited to use the ElectriQuote estimate builder.",detail:"To accept the invitation, set your own password. Then you can sign in and see the shared history of saved quotes.",cta:"Activate account",security:"If you did not expect this email, you can ignore it.",signature:"Best regards,",footer:"This is only a preview. Test recipient: test@example.invalid."}};
-    const els={subject:document.querySelector("#subject"),title:document.querySelector("#title"),intro:document.querySelector("#intro"),detail:document.querySelector("#detail"),cta:document.querySelector(".cta"),security:document.querySelector("#security"),signature:document.querySelector("#signature"),footer:document.querySelector("#footer")};
-    document.querySelector("#language").addEventListener("change",(event)=>{const t=copy[event.target.value]; for(const key of ["subject","title","intro","detail","security","footer"]) els[key].textContent=t[key]; els.cta.textContent=t.cta; els.signature.innerHTML=`${t.signature}<br><strong>ElectriQuote</strong>`; document.documentElement.lang=event.target.value;});
-  </script>
 </body>
 </html>
