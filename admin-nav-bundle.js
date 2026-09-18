@@ -459,8 +459,8 @@ var __require2 = /* @__PURE__ */ ((x) => typeof __require !== "undefined" ? __re
 });
 var AUTH_PROVIDERS = ["google", "github", "gitlab", "bitbucket", "facebook", "email"];
 var AuthError = class _AuthError extends Error {
-  constructor(message2, status, options) {
-    super(message2);
+  constructor(message, status, options) {
+    super(message);
     this.name = "AuthError";
     this.status = status;
     if (options && "cause" in options) {
@@ -469,13 +469,13 @@ var AuthError = class _AuthError extends Error {
   }
   static from(error) {
     if (error instanceof _AuthError) return error;
-    const message2 = error instanceof Error ? error.message : String(error);
-    return new _AuthError(message2, void 0, { cause: error });
+    const message = error instanceof Error ? error.message : String(error);
+    return new _AuthError(message, void 0, { cause: error });
   }
 };
 var MissingIdentityError = class extends Error {
-  constructor(message2 = "Netlify Identity is not available.") {
-    super(message2);
+  constructor(message = "Netlify Identity is not available.") {
+    super(message);
     this.name = "MissingIdentityError";
   }
 };
@@ -547,26 +547,6 @@ var getCookie = (name) => {
     return decodeURIComponent(match[1]);
   } catch {
     return match[1];
-  }
-};
-var setAuthCookies = (cookies, accessToken, refreshToken) => {
-  cookies.set({
-    name: NF_JWT_COOKIE,
-    value: accessToken,
-    httpOnly: false,
-    secure: true,
-    path: "/",
-    sameSite: "Lax"
-  });
-  if (refreshToken) {
-    cookies.set({
-      name: NF_REFRESH_COOKIE,
-      value: refreshToken,
-      httpOnly: false,
-      secure: true,
-      path: "/",
-      sameSite: "Lax"
-    });
   }
 };
 var setBrowserAuthCookies = (accessToken, refreshToken) => {
@@ -679,178 +659,7 @@ var stopTokenRefresh = () => {
     refreshTimer = null;
   }
 };
-var getCookies = () => {
-  const cookies = globalThis.Netlify?.context?.cookies;
-  if (!cookies) {
-    throw new AuthError("Server-side auth requires Netlify Functions runtime");
-  }
-  return cookies;
-};
-var getServerIdentityUrl = () => {
-  const ctx = getIdentityContext();
-  if (!ctx?.url) {
-    throw new AuthError("Could not determine the Identity endpoint URL on the server");
-  }
-  return ctx.url;
-};
 var persistSession = true;
-var login = async (email, password) => {
-  if (!isBrowser2()) {
-    const identityUrl = getServerIdentityUrl();
-    const cookies = getCookies();
-    const body = new URLSearchParams({
-      grant_type: "password",
-      username: email,
-      password
-    });
-    let res;
-    try {
-      res = await fetchWithTimeout(`${identityUrl}/token`, {
-        method: "POST",
-        headers: { "Content-Type": "application/x-www-form-urlencoded" },
-        body: body.toString()
-      });
-    } catch (error) {
-      throw AuthError.from(error);
-    }
-    if (!res.ok) {
-      const errorBody = await res.json().catch(() => ({}));
-      throw new AuthError(
-        errorBody.msg ?? errorBody.error_description ?? `Login failed (${String(res.status)})`,
-        res.status
-      );
-    }
-    const data = await res.json();
-    const accessToken = data.access_token;
-    let userRes;
-    try {
-      userRes = await fetchWithTimeout(`${identityUrl}/user`, {
-        headers: { Authorization: `Bearer ${accessToken}` }
-      });
-    } catch (error) {
-      throw AuthError.from(error);
-    }
-    if (!userRes.ok) {
-      const errorBody = await userRes.json().catch(() => ({}));
-      throw new AuthError(errorBody.msg ?? `Failed to fetch user data (${String(userRes.status)})`, userRes.status);
-    }
-    const userData = await userRes.json();
-    const user = toUser(userData);
-    setAuthCookies(cookies, accessToken, data.refresh_token);
-    return user;
-  }
-  const client = getClient();
-  try {
-    const gotrueUser = await client.login(email, password, persistSession);
-    const jwt = await gotrueUser.jwt();
-    setBrowserAuthCookies(jwt, gotrueUser.tokenDetails()?.refresh_token);
-    const user = toUser(gotrueUser);
-    startTokenRefresh();
-    emitAuthEvent(AUTH_EVENTS.LOGIN, user);
-    return user;
-  } catch (error) {
-    throw AuthError.from(error);
-  }
-};
-var handleAuthCallback = async () => {
-  if (!isBrowser2()) return null;
-  const hash = window.location.hash.substring(1);
-  if (!hash) return null;
-  const client = getClient();
-  const params = new URLSearchParams(hash);
-  try {
-    const accessToken = params.get("access_token");
-    if (accessToken) return await handleOAuthCallback(client, params, accessToken);
-    const confirmationToken = params.get("confirmation_token");
-    if (confirmationToken) return await handleConfirmationCallback(client, confirmationToken);
-    const recoveryToken = params.get("recovery_token");
-    if (recoveryToken) return await handleRecoveryCallback(client, recoveryToken);
-    const inviteToken = params.get("invite_token");
-    if (inviteToken) return handleInviteCallback(inviteToken);
-    const emailChangeToken = params.get("email_change_token");
-    if (emailChangeToken) return await handleEmailChangeCallback(client, emailChangeToken);
-    return null;
-  } catch (error) {
-    if (error instanceof AuthError) throw error;
-    throw AuthError.from(error);
-  }
-};
-var handleOAuthCallback = async (client, params, accessToken) => {
-  const refreshToken = params.get("refresh_token") ?? "";
-  const expiresIn = parseInt(params.get("expires_in") ?? "", 10);
-  const expiresAt = parseInt(params.get("expires_at") ?? "", 10);
-  const gotrueUser = await client.createUser(
-    {
-      access_token: accessToken,
-      token_type: params.get("token_type") ?? "bearer",
-      expires_in: isFinite(expiresIn) ? expiresIn : 3600,
-      expires_at: isFinite(expiresAt) ? expiresAt : Math.floor(Date.now() / 1e3) + 3600,
-      refresh_token: refreshToken
-    },
-    persistSession
-  );
-  setBrowserAuthCookies(accessToken, refreshToken || void 0);
-  const user = toUser(gotrueUser);
-  startTokenRefresh();
-  clearHash();
-  emitAuthEvent(AUTH_EVENTS.LOGIN, user);
-  return { type: "oauth", user };
-};
-var handleConfirmationCallback = async (client, token) => {
-  const gotrueUser = await client.confirm(token, persistSession);
-  const jwt = await gotrueUser.jwt();
-  setBrowserAuthCookies(jwt, gotrueUser.tokenDetails()?.refresh_token);
-  const user = toUser(gotrueUser);
-  startTokenRefresh();
-  clearHash();
-  emitAuthEvent(AUTH_EVENTS.LOGIN, user);
-  return { type: "confirmation", user };
-};
-var handleRecoveryCallback = async (client, token) => {
-  const gotrueUser = await client.recover(token, persistSession);
-  const jwt = await gotrueUser.jwt();
-  setBrowserAuthCookies(jwt, gotrueUser.tokenDetails()?.refresh_token);
-  const user = toUser(gotrueUser);
-  startTokenRefresh();
-  clearHash();
-  emitAuthEvent(AUTH_EVENTS.RECOVERY, user);
-  return { type: "recovery", user };
-};
-var handleInviteCallback = (token) => {
-  clearHash();
-  return { type: "invite", user: null, token };
-};
-var handleEmailChangeCallback = async (client, emailChangeToken) => {
-  const currentUser2 = client.currentUser();
-  if (!currentUser2) {
-    throw new AuthError("Email change verification requires an active browser session");
-  }
-  const jwt = await currentUser2.jwt();
-  const identityUrl = `${window.location.origin}${IDENTITY_PATH}`;
-  const emailChangeRes = await fetch(`${identityUrl}/user`, {
-    method: "PUT",
-    headers: {
-      "Content-Type": "application/json",
-      Authorization: `Bearer ${jwt}`
-    },
-    body: JSON.stringify({ email_change_token: emailChangeToken })
-  });
-  if (!emailChangeRes.ok) {
-    const errorBody = await emailChangeRes.json().catch(() => ({}));
-    throw new AuthError(
-      errorBody.msg ?? `Email change verification failed (${String(emailChangeRes.status)})`,
-      emailChangeRes.status
-    );
-  }
-  const emailChangeData = await emailChangeRes.json();
-  const user = toUser(emailChangeData);
-  clearHash();
-  emitAuthEvent(AUTH_EVENTS.USER_UPDATED, user);
-  return { type: "email_change", user };
-};
-var clearHash = () => {
-  history.replaceState(null, "", window.location.pathname + window.location.search);
-};
 var hydrateSession = async () => {
   if (!isBrowser2()) return null;
   const client = getClient();
@@ -1007,78 +816,11 @@ var getUser = async () => {
   const claims = identityContext?.user ?? null;
   return claims ? claimsToUser(claims) : null;
 };
-var recoverPassword = async (token, newPassword) => {
-  const client = getClient();
-  try {
-    const gotrueUser = await client.recover(token, persistSession);
-    const updatedUser = await gotrueUser.update({ password: newPassword });
-    const user = toUser(updatedUser);
-    startTokenRefresh();
-    emitAuthEvent(AUTH_EVENTS.LOGIN, user);
-    return user;
-  } catch (error) {
-    throw AuthError.from(error);
-  }
-};
-var acceptInvite = async (token, password) => {
-  const client = getClient();
-  try {
-    const gotrueUser = await client.acceptInvite(token, password, persistSession);
-    const user = toUser(gotrueUser);
-    startTokenRefresh();
-    emitAuthEvent(AUTH_EVENTS.LOGIN, user);
-    return user;
-  } catch (error) {
-    throw AuthError.from(error);
-  }
-};
 
-// auth-app.js
-var loginForm = document.querySelector("#loginForm");
-var passwordForm = document.querySelector("#passwordForm");
-var message = document.querySelector("#message");
-function show(messageText, kind = "") {
-  message.textContent = messageText;
-  message.dataset.kind = kind;
-}
-loginForm.addEventListener("submit", async (event) => {
-  event.preventDefault();
-  try {
-    await login(loginForm.email.value.trim(), loginForm.password.value);
-    window.location.href = "/";
-  } catch (error) {
-    show(error.message || "Sikertelen bel\xE9p\xE9s.", "error");
-  }
-});
-passwordForm.addEventListener("submit", async (event) => {
-  event.preventDefault();
-  try {
-    const token = passwordForm.dataset.token;
-    if (passwordForm.password.value !== passwordForm.confirm.value) throw new Error("A k\xE9t jelsz\xF3 nem egyezik.");
-    if (passwordForm.dataset.mode === "invite") await acceptInvite(token, passwordForm.password.value);
-    else await recoverPassword(token, passwordForm.password.value);
-    window.location.href = "/";
-  } catch (error) {
-    show(error.message || "A jelsz\xF3 be\xE1ll\xEDt\xE1sa sikertelen.", "error");
-  }
-});
+// admin-nav.js
+var button = document.querySelector("#adminUsersBtn");
 try {
-  const query = new URLSearchParams(window.location.search);
-  for (const tokenName of ["invite_token", "recovery_token", "confirmation_token"]) {
-    const token = query.get(tokenName);
-    if (!window.location.hash && token) window.location.hash = `#${tokenName}=${encodeURIComponent(token)}`;
-  }
-  const callback = await handleAuthCallback();
-  const existingUser = await getUser();
-  if (existingUser) window.location.href = "/";
-  if (callback?.type === "invite" || callback?.type === "recovery") {
-    loginForm.hidden = true;
-    passwordForm.hidden = false;
-    passwordForm.dataset.mode = callback.type;
-    passwordForm.dataset.token = callback.token;
-    document.querySelector("#authTitle").textContent = callback.type === "invite" ? "Fi\xF3k aktiv\xE1l\xE1sa" : "\xDAj jelsz\xF3 be\xE1ll\xEDt\xE1sa";
-    document.querySelector("#authDescription").textContent = callback.type === "invite" ? "A megh\xEDv\xF3 \xE9rv\xE9nyes. \xC1ll\xEDtsd be a saj\xE1t jelszavadat az aktiv\xE1l\xE1shoz." : "\xC1ll\xEDts be egy \xFAj jelsz\xF3t a fi\xF3kodhoz.";
-  }
-} catch (error) {
-  show(error.message || "A bel\xE9p\xE9s nem \xE9rhet\u0151 el.", "error");
+  const user = await getUser();
+  if (user?.role === "admin" || user?.roles?.includes("admin")) button.hidden = false;
+} catch {
 }

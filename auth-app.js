@@ -1,30 +1,13 @@
-import { acceptInvite, getUser, handleAuthCallback, login, recoverPassword, signup } from "@netlify/identity";
+import { acceptInvite, getUser, handleAuthCallback, login, recoverPassword } from "@netlify/identity";
 
 const loginForm = document.querySelector("#loginForm");
 const passwordForm = document.querySelector("#passwordForm");
-const signupForm = document.querySelector("#signupForm");
 const message = document.querySelector("#message");
-const showSignupBtn = document.querySelector("#showSignupBtn");
-const showLoginBtn = document.querySelector("#showLoginBtn");
 
 function show(messageText, kind = "") {
   message.textContent = messageText;
   message.dataset.kind = kind;
 }
-
-showSignupBtn?.addEventListener("click", () => {
-  loginForm.hidden = true;
-  signupForm.hidden = false;
-  document.querySelector("#authTitle").textContent = "Új fiók létrehozása";
-  document.querySelector("#authDescription").textContent = "Regisztráció után használhatod az ElectriQuote ajánlatkészítőjét.";
-});
-
-showLoginBtn?.addEventListener("click", () => {
-  signupForm.hidden = true;
-  loginForm.hidden = false;
-  document.querySelector("#authTitle").textContent = "Belépés szükséges";
-  document.querySelector("#authDescription").textContent = "Az ajánlatok és az előzmények csak bejelentkezés után érhetők el.";
-});
 
 loginForm.addEventListener("submit", async (event) => {
   event.preventDefault();
@@ -33,17 +16,6 @@ loginForm.addEventListener("submit", async (event) => {
     window.location.href = "/";
   } catch (error) {
     show(error.message || "Sikertelen belépés.", "error");
-  }
-});
-
-signupForm?.addEventListener("submit", async (event) => {
-  event.preventDefault();
-  try {
-    const user = await signup(signupForm.email.value.trim(), signupForm.password.value, { full_name: signupForm.name.value.trim() });
-    show(user.emailVerified ? "A fiók létrejött, beléphetsz." : "Ellenőrizd az email-fiókodat a regisztráció befejezéséhez.", "success");
-    signupForm.reset();
-  } catch (error) {
-    show(error.message || "A regisztráció sikertelen.", "error");
   }
 });
 

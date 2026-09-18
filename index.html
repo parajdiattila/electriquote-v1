@@ -3,6 +3,7 @@
 <head>
   <style>html:not(.authorized) body{visibility:hidden}</style>
   <script type="module" src="/gate-bundle.js"></script>
+  <script type="module" src="/admin-nav-bundle.js"></script>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>ElectriQuote 1.0</title>
@@ -60,6 +61,24 @@ button.primary {
 
 button.secondary {
   background: #eef5f4;
+}
+
+a.admin-users-btn {
+  display: inline-flex;
+  align-items: center;
+  min-height: 38px;
+  padding: 0 14px;
+  border: 1px solid var(--line);
+  border-radius: 6px;
+  color: var(--ink);
+  background: #eef5f4;
+  text-decoration: none;
+  font-weight: 700;
+}
+
+a.admin-users-btn:hover {
+  border-color: var(--accent);
+  color: var(--ink);
 }
 
 button.danger {
@@ -628,6 +647,7 @@ body.modal-open {
             <option value="en">English</option>
           </select>
           <button id="historyBtn" class="primary history-btn" type="button" data-i18n="history">Előzmények</button>
+          <a id="adminUsersBtn" class="secondary admin-users-btn" href="/admin.html" data-i18n="users" hidden>Felhasználók</a>
           <button id="saveBtn" class="secondary" type="button" title="Ajánlat mentése a böngészőben" data-i18n="save" hidden>Mentés</button>
           <button id="saveAsQuoteBtn" class="secondary" type="button" data-i18n="saveAsQuote">Mentés új ajánlatként</button>
           <button id="quoteFileSaveBtn" class="secondary" type="button" data-i18n="quoteFileSave">Ajánlat fájl mentése</button>
@@ -27606,6 +27626,7 @@ const I18N = {
     appSubtitle: "2026-os B2B/ipari munkadíj adatbázis, élő kereséssel és ajánlat exporttal.",
     save: "Mentés",
     history: "Előzmények",
+    users: "Felhasználók",
     saveAsQuote: "Mentés új ajánlatként",
     quoteFileSave: "Ajánlat fájl mentése",
     quoteFileOpen: "Ajánlat fájl megnyitása",
@@ -27683,6 +27704,7 @@ const I18N = {
     appSubtitle: "Bază de prețuri manoperă B2B/industrială 2026, cu căutare live și export deviz.",
     save: "Salvează",
     history: "Istoric",
+    users: "Utilizatori",
     saveAsQuote: "Salvează ca deviz nou",
     quoteFileSave: "Salvează fișier deviz",
     quoteFileOpen: "Deschide fișier deviz",
@@ -27760,6 +27782,7 @@ const I18N = {
     appSubtitle: "Extended 2.1 database with 840 B2B/industrial labor items, live search, and estimate export.",
     save: "Save",
     history: "History",
+    users: "Users",
     saveAsQuote: "Save as new quote",
     quoteFileSave: "Save quote file",
     quoteFileOpen: "Open quote file",
