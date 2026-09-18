@@ -1072,6 +1072,7 @@ try {
     passwordForm.dataset.mode = callback.type;
     passwordForm.dataset.token = callback.token;
     document.querySelector("#authTitle").textContent = callback.type === "invite" ? "Fi\xF3k aktiv\xE1l\xE1sa" : "\xDAj jelsz\xF3 be\xE1ll\xEDt\xE1sa";
+    document.querySelector("#authDescription").textContent = callback.type === "invite" ? "A megh\xEDv\xF3 \xE9rv\xE9nyes. \xC1ll\xEDtsd be a saj\xE1t jelszavadat az aktiv\xE1l\xE1shoz." : "\xC1ll\xEDts be egy \xFAj jelsz\xF3t a fi\xF3kodhoz.";
   }
 } catch (error) {
   show(error.message || "A bel\xE9p\xE9s nem \xE9rhet\u0151 el.", "error");

@@ -42,6 +42,9 @@ try {
     passwordForm.dataset.mode = callback.type;
     passwordForm.dataset.token = callback.token;
     document.querySelector("#authTitle").textContent = callback.type === "invite" ? "Fiók aktiválása" : "Új jelszó beállítása";
+    document.querySelector("#authDescription").textContent = callback.type === "invite"
+      ? "A meghívó érvényes. Állítsd be a saját jelszavadat az aktiváláshoz."
+      : "Állíts be egy új jelszót a fiókodhoz.";
   }
 } catch (error) {
   show(error.message || "A belépés nem érhető el.", "error");
