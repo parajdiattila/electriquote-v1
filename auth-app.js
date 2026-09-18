@@ -33,6 +33,11 @@ passwordForm.addEventListener("submit", async (event) => {
 });
 
 try {
+  const query = new URLSearchParams(window.location.search);
+  for (const tokenName of ["invite_token", "recovery_token", "confirmation_token"]) {
+    const token = query.get(tokenName);
+    if (!window.location.hash && token) window.location.hash = `#${tokenName}=${encodeURIComponent(token)}`;
+  }
   const callback = await handleAuthCallback();
   const existingUser = await getUser();
   if (existingUser) window.location.href = "/";
