@@ -28582,7 +28582,8 @@ function saveAsArchivedQuote() {
 
 function selectedArchivedQuote() {
   const id = els.quoteArchiveSelect.value;
-  return archivedQuotes().find((entry) => entry.id === id);
+  const quotes = Array.isArray(state.remoteQuotes) ? state.remoteQuotes : archivedQuotes();
+  return quotes.find((entry) => entry.id === id);
 }
 
 function applyQuotePayload(payload) {
@@ -28619,7 +28620,7 @@ function updateArchivedQuote() {
     flashButton(els.updateArchiveQuoteBtn, t("selectQuoteFirst"));
     return;
   }
-  const quotes = archivedQuotes();
+  const quotes = Array.isArray(state.remoteQuotes) ? state.remoteQuotes.slice() : archivedQuotes();
   const index = quotes.findIndex((entry) => entry.id === id);
   if (index < 0) return;
   quotes[index] = {
@@ -28641,7 +28642,8 @@ function deleteArchivedQuote() {
     flashButton(els.deleteArchiveQuoteBtn, t("selectQuoteFirst"));
     return;
   }
-  saveArchivedQuotes(archivedQuotes().filter((entry) => entry.id !== id));
+  const quotes = Array.isArray(state.remoteQuotes) ? state.remoteQuotes : archivedQuotes();
+  saveArchivedQuotes(quotes.filter((entry) => entry.id !== id));
   void deleteRemoteQuote(id);
   fillQuoteArchive();
   flashButton(els.deleteArchiveQuoteBtn, t("quoteDeleted"));

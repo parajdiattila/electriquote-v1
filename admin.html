@@ -1,0 +1,39 @@
+<!doctype html>
+<html lang="hu">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>ElectriQuote – Admin</title>
+  <style>
+    :root { color-scheme: light; font-family: Inter, system-ui, sans-serif; background:#f4f7fb; color:#182437; }
+    body { margin:0; min-height:100vh; background:linear-gradient(140deg,#eef6ff,#fff); }
+    main { width:min(1040px,calc(100% - 32px)); margin:36px auto; }
+    header { display:flex; justify-content:space-between; align-items:center; gap:16px; margin-bottom:24px; }
+    h1,h2 { margin:0 0 8px; } h1 { color:#0d4d89; } h2 { font-size:20px; }
+    .card { background:white; border:1px solid #d9e3f0; border-radius:18px; padding:24px; box-shadow:0 12px 32px #163e5d12; margin-bottom:18px; }
+    form { display:grid; gap:12px; max-width:520px; } label { font-weight:700; font-size:14px; } input { padding:12px; border:1px solid #bdcce0; border-radius:9px; font:inherit; }
+    button { border:0; border-radius:9px; padding:11px 16px; font-weight:800; cursor:pointer; background:#1263a2; color:white; } button.secondary { background:#e7eef7; color:#16456e; }
+    .actions { display:flex; flex-wrap:wrap; gap:10px; } [hidden] { display:none !important; }
+    #status { min-height:24px; margin:10px 0; } #status[data-kind=error] { color:#b42318; } #status[data-kind=success] { color:#087443; }
+    table { width:100%; border-collapse:collapse; } th,td { text-align:left; padding:12px 8px; border-bottom:1px solid #e3ebf4; } th { color:#47617c; font-size:13px; }
+    .muted { color:#64748b; } a { color:#1263a2; }
+  </style>
+</head>
+<body>
+  <main>
+    <header><div><h1>ElectriQuote admin</h1><div class="muted">Felhasználók és meghívók kezelése</div></div><a href="/">← Vissza az ajánlatokhoz</a></header>
+    <section id="authPanel" class="card">
+      <h2>Admin belépés</h2><p class="muted">Az admin oldalt csak admin jogosultságú felhasználó használhatja.</p>
+      <form id="loginForm"><label>Email<input name="email" type="email" required autocomplete="username"></label><label>Jelszó<input name="password" type="password" required autocomplete="current-password"></label><button>Belépés</button></form>
+      <details><summary>Első admin fiók létrehozása</summary><form id="signupForm"><label>Név<input name="name"></label><label>Email<input name="email" type="email" required></label><label>Jelszó<input name="password" type="password" minlength="8" required></label><button>Regisztráció</button></form></details>
+    </section>
+    <div id="status"></div>
+    <section id="adminApp" hidden>
+      <section class="card"><div class="actions"><strong>Bejelentkezve: <span id="adminEmail"></span></strong><button id="logoutBtn" class="secondary">Kilépés</button></div></section>
+      <section class="card"><h2>Felhasználó meghívása</h2><p class="muted">A meghívott emailben kap belépési/jelszóbeállítási lehetőséget.</p><form id="inviteForm"><label>Név<input name="name"></label><label>Email<input name="email" type="email" required></label><button>Meghívó küldése</button></form></section>
+      <section class="card"><div class="actions"><h2 style="margin-right:auto">Felhasználók</h2><button id="refreshBtn" class="secondary">Frissítés</button></div><div style="overflow:auto"><table><thead><tr><th>Név</th><th>Email</th><th>Szerep</th><th>Utolsó belépés</th></tr></thead><tbody id="usersList"></tbody></table></div></section>
+    </section>
+  </main>
+  <script type="module" src="/admin-bundle.js"></script>
+</body>
+</html>

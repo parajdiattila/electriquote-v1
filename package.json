@@ -2,6 +2,10 @@
   "name": "electriquote-v1-netlify",
   "private": true,
   "dependencies": {
-    "@netlify/blobs": "latest"
+    "@netlify/blobs": "latest",
+    "@netlify/identity": "^2.0.0"
+  },
+  "devDependencies": {
+    "esbuild": "^0.28.2"
   }
 }
