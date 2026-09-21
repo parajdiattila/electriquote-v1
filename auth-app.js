@@ -4,6 +4,39 @@ const loginForm = document.querySelector("#loginForm");
 const passwordForm = document.querySelector("#passwordForm");
 const message = document.querySelector("#message");
 
+const translations = {
+  hu: {
+    title: "Belépés szükséges", description: "Az ajánlatok és az előzmények csak meghívott felhasználóknak érhetők el.", existingLogin: "Belépés meglévő fiókkal", email: "Email", password: "Jelszó", loginButton: "Belépés az ElectriQuote-ba →", activateTitle: "Fiók aktiválása", inviteDescription: "Az emailben kapott meghívó érvényes. Állítsd be a saját jelszavadat.", newPassword: "Új jelszó", confirmPassword: "Új jelszó ismétlése", activateButton: "Fiók aktiválása →", secureNote: "🔒 Biztonságos Netlify Identity belépés", pageTitle: "ElectriQuote – Belépés"
+  },
+  ro: {
+    title: "Autentificare necesară", description: "Ofertele și istoricul sunt disponibile numai utilizatorilor invitați.", existingLogin: "Autentificare cu un cont existent", email: "Email", password: "Parolă", loginButton: "Intră în ElectriQuote →", activateTitle: "Activarea contului", inviteDescription: "Invitația primită prin email este valabilă. Setează-ți propria parolă.", newPassword: "Parolă nouă", confirmPassword: "Confirmă parola nouă", activateButton: "Activează contul →", secureNote: "🔒 Autentificare securizată Netlify Identity", pageTitle: "ElectriQuote – Autentificare"
+  },
+  en: {
+    title: "Sign in required", description: "Quotes and history are available only to invited users.", existingLogin: "Sign in with an existing account", email: "Email", password: "Password", loginButton: "Sign in to ElectriQuote →", activateTitle: "Activate your account", inviteDescription: "Your email invitation is valid. Set your own password.", newPassword: "New password", confirmPassword: "Repeat new password", activateButton: "Activate account →", secureNote: "🔒 Secure Netlify Identity sign-in", pageTitle: "ElectriQuote – Sign in"
+  }
+};
+
+function applyLanguage(lang = localStorage.getItem("villany-arajanlat-lang") || "hu") {
+  const current = translations[lang] || translations.hu;
+  document.documentElement.lang = lang;
+  document.title = current.pageTitle;
+  document.querySelectorAll("[data-i18n]").forEach((element) => {
+    const key = element.dataset.i18n;
+    if (current[key]) element.textContent = current[key];
+  });
+  const mode = passwordForm.dataset.mode;
+  if (mode === "invite") {
+    document.querySelector("#authTitle").textContent = current.activateTitle;
+    document.querySelector("#authDescription").textContent = current.inviteDescription;
+  } else if (mode === "recovery") {
+    document.querySelector("#authTitle").textContent = lang === "ro" ? "Setează o parolă nouă" : lang === "en" ? "Set a new password" : "Új jelszó beállítása";
+    document.querySelector("#authDescription").textContent = lang === "ro" ? "Setează o parolă nouă pentru contul tău." : lang === "en" ? "Set a new password for your account." : "Állíts be egy új jelszót a fiókodhoz.";
+  }
+}
+
+window.addEventListener("app-language-change", (event) => applyLanguage(event.detail?.lang));
+applyLanguage();
+
 function show(messageText, kind = "") {
   message.textContent = messageText;
   message.dataset.kind = kind;
@@ -46,10 +79,7 @@ try {
     passwordForm.hidden = false;
     passwordForm.dataset.mode = callback.type;
     passwordForm.dataset.token = callback.token;
-    document.querySelector("#authTitle").textContent = callback.type === "invite" ? "Fiók aktiválása" : "Új jelszó beállítása";
-    document.querySelector("#authDescription").textContent = callback.type === "invite"
-      ? "A meghívó érvényes. Állítsd be a saját jelszavadat az aktiváláshoz."
-      : "Állíts be egy új jelszót a fiókodhoz.";
+    applyLanguage();
   } else if (await getUser()) {
     window.location.href = "/";
   }

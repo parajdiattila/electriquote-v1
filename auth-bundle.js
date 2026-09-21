@@ -1037,6 +1037,72 @@ var acceptInvite = async (token, password) => {
 var loginForm = document.querySelector("#loginForm");
 var passwordForm = document.querySelector("#passwordForm");
 var message = document.querySelector("#message");
+var translations = {
+  hu: {
+    title: "Bel\xE9p\xE9s sz\xFCks\xE9ges",
+    description: "Az aj\xE1nlatok \xE9s az el\u0151zm\xE9nyek csak megh\xEDvott felhaszn\xE1l\xF3knak \xE9rhet\u0151k el.",
+    existingLogin: "Bel\xE9p\xE9s megl\xE9v\u0151 fi\xF3kkal",
+    email: "Email",
+    password: "Jelsz\xF3",
+    loginButton: "Bel\xE9p\xE9s az ElectriQuote-ba \u2192",
+    activateTitle: "Fi\xF3k aktiv\xE1l\xE1sa",
+    inviteDescription: "Az emailben kapott megh\xEDv\xF3 \xE9rv\xE9nyes. \xC1ll\xEDtsd be a saj\xE1t jelszavadat.",
+    newPassword: "\xDAj jelsz\xF3",
+    confirmPassword: "\xDAj jelsz\xF3 ism\xE9tl\xE9se",
+    activateButton: "Fi\xF3k aktiv\xE1l\xE1sa \u2192",
+    secureNote: "\u{1F512} Biztons\xE1gos Netlify Identity bel\xE9p\xE9s",
+    pageTitle: "ElectriQuote \u2013 Bel\xE9p\xE9s"
+  },
+  ro: {
+    title: "Autentificare necesar\u0103",
+    description: "Ofertele \u0219i istoricul sunt disponibile numai utilizatorilor invita\u021Bi.",
+    existingLogin: "Autentificare cu un cont existent",
+    email: "Email",
+    password: "Parol\u0103",
+    loginButton: "Intr\u0103 \xEEn ElectriQuote \u2192",
+    activateTitle: "Activarea contului",
+    inviteDescription: "Invita\u021Bia primit\u0103 prin email este valabil\u0103. Seteaz\u0103-\u021Bi propria parol\u0103.",
+    newPassword: "Parol\u0103 nou\u0103",
+    confirmPassword: "Confirm\u0103 parola nou\u0103",
+    activateButton: "Activeaz\u0103 contul \u2192",
+    secureNote: "\u{1F512} Autentificare securizat\u0103 Netlify Identity",
+    pageTitle: "ElectriQuote \u2013 Autentificare"
+  },
+  en: {
+    title: "Sign in required",
+    description: "Quotes and history are available only to invited users.",
+    existingLogin: "Sign in with an existing account",
+    email: "Email",
+    password: "Password",
+    loginButton: "Sign in to ElectriQuote \u2192",
+    activateTitle: "Activate your account",
+    inviteDescription: "Your email invitation is valid. Set your own password.",
+    newPassword: "New password",
+    confirmPassword: "Repeat new password",
+    activateButton: "Activate account \u2192",
+    secureNote: "\u{1F512} Secure Netlify Identity sign-in",
+    pageTitle: "ElectriQuote \u2013 Sign in"
+  }
+};
+function applyLanguage(lang = localStorage.getItem("villany-arajanlat-lang") || "hu") {
+  const current = translations[lang] || translations.hu;
+  document.documentElement.lang = lang;
+  document.title = current.pageTitle;
+  document.querySelectorAll("[data-i18n]").forEach((element) => {
+    const key = element.dataset.i18n;
+    if (current[key]) element.textContent = current[key];
+  });
+  const mode = passwordForm.dataset.mode;
+  if (mode === "invite") {
+    document.querySelector("#authTitle").textContent = current.activateTitle;
+    document.querySelector("#authDescription").textContent = current.inviteDescription;
+  } else if (mode === "recovery") {
+    document.querySelector("#authTitle").textContent = lang === "ro" ? "Seteaz\u0103 o parol\u0103 nou\u0103" : lang === "en" ? "Set a new password" : "\xDAj jelsz\xF3 be\xE1ll\xEDt\xE1sa";
+    document.querySelector("#authDescription").textContent = lang === "ro" ? "Seteaz\u0103 o parol\u0103 nou\u0103 pentru contul t\u0103u." : lang === "en" ? "Set a new password for your account." : "\xC1ll\xEDts be egy \xFAj jelsz\xF3t a fi\xF3kodhoz.";
+  }
+}
+window.addEventListener("app-language-change", (event) => applyLanguage(event.detail?.lang));
+applyLanguage();
 function show(messageText, kind = "") {
   message.textContent = messageText;
   message.dataset.kind = kind;
@@ -1076,8 +1142,7 @@ try {
     passwordForm.hidden = false;
     passwordForm.dataset.mode = callback.type;
     passwordForm.dataset.token = callback.token;
-    document.querySelector("#authTitle").textContent = callback.type === "invite" ? "Fi\xF3k aktiv\xE1l\xE1sa" : "\xDAj jelsz\xF3 be\xE1ll\xEDt\xE1sa";
-    document.querySelector("#authDescription").textContent = callback.type === "invite" ? "A megh\xEDv\xF3 \xE9rv\xE9nyes. \xC1ll\xEDtsd be a saj\xE1t jelszavadat az aktiv\xE1l\xE1shoz." : "\xC1ll\xEDts be egy \xFAj jelsz\xF3t a fi\xF3kodhoz.";
+    applyLanguage();
   } else if (await getUser()) {
     window.location.href = "/";
   }
