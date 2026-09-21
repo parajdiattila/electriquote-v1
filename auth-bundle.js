@@ -1045,6 +1045,7 @@ loginForm.addEventListener("submit", async (event) => {
   event.preventDefault();
   try {
     await login(loginForm.email.value.trim(), loginForm.password.value);
+    if (!await getUser()) throw new Error("A bejelentkez\xE9si munkamenet nem j\xF6tt l\xE9tre.");
     window.location.href = "/";
   } catch (error) {
     show(error.message || "Sikertelen bel\xE9p\xE9s.", "error");
@@ -1057,6 +1058,7 @@ passwordForm.addEventListener("submit", async (event) => {
     if (passwordForm.password.value !== passwordForm.confirm.value) throw new Error("A k\xE9t jelsz\xF3 nem egyezik.");
     if (passwordForm.dataset.mode === "invite") await acceptInvite(token, passwordForm.password.value);
     else await recoverPassword(token, passwordForm.password.value);
+    if (!await getUser()) throw new Error("A fi\xF3k aktiv\xE1l\xE1sa siker\xFClt, de a bejelentkez\xE9si munkamenet nem j\xF6tt l\xE9tre. L\xE9pj be a be\xE1ll\xEDtott jelsz\xF3val.");
     window.location.href = "/";
   } catch (error) {
     show(error.message || "A jelsz\xF3 be\xE1ll\xEDt\xE1sa sikertelen.", "error");
@@ -1066,11 +1068,9 @@ try {
   const query = new URLSearchParams(window.location.search);
   for (const tokenName of ["invite_token", "recovery_token", "confirmation_token"]) {
     const token = query.get(tokenName);
-    if (!window.location.hash && token) window.location.hash = `#${tokenName}=${encodeURIComponent(token)}`;
+    if (token) window.location.hash = `#${tokenName}=${encodeURIComponent(token)}`;
   }
   const callback = await handleAuthCallback();
-  const existingUser = await getUser();
-  if (existingUser) window.location.href = "/";
   if (callback?.type === "invite" || callback?.type === "recovery") {
     loginForm.hidden = true;
     passwordForm.hidden = false;
@@ -1078,6 +1078,8 @@ try {
     passwordForm.dataset.token = callback.token;
     document.querySelector("#authTitle").textContent = callback.type === "invite" ? "Fi\xF3k aktiv\xE1l\xE1sa" : "\xDAj jelsz\xF3 be\xE1ll\xEDt\xE1sa";
     document.querySelector("#authDescription").textContent = callback.type === "invite" ? "A megh\xEDv\xF3 \xE9rv\xE9nyes. \xC1ll\xEDtsd be a saj\xE1t jelszavadat az aktiv\xE1l\xE1shoz." : "\xC1ll\xEDts be egy \xFAj jelsz\xF3t a fi\xF3kodhoz.";
+  } else if (await getUser()) {
+    window.location.href = "/";
   }
 } catch (error) {
   show(error.message || "A bel\xE9p\xE9s nem \xE9rhet\u0151 el.", "error");

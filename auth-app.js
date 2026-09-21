@@ -13,6 +13,7 @@ loginForm.addEventListener("submit", async (event) => {
   event.preventDefault();
   try {
     await login(loginForm.email.value.trim(), loginForm.password.value);
+    if (!(await getUser())) throw new Error("A bejelentkezési munkamenet nem jött létre.");
     window.location.href = "/";
   } catch (error) {
     show(error.message || "Sikertelen belépés.", "error");
@@ -26,6 +27,7 @@ passwordForm.addEventListener("submit", async (event) => {
     if (passwordForm.password.value !== passwordForm.confirm.value) throw new Error("A két jelszó nem egyezik.");
     if (passwordForm.dataset.mode === "invite") await acceptInvite(token, passwordForm.password.value);
     else await recoverPassword(token, passwordForm.password.value);
+    if (!(await getUser())) throw new Error("A fiók aktiválása sikerült, de a bejelentkezési munkamenet nem jött létre. Lépj be a beállított jelszóval.");
     window.location.href = "/";
   } catch (error) {
     show(error.message || "A jelszó beállítása sikertelen.", "error");
@@ -36,11 +38,9 @@ try {
   const query = new URLSearchParams(window.location.search);
   for (const tokenName of ["invite_token", "recovery_token", "confirmation_token"]) {
     const token = query.get(tokenName);
-    if (!window.location.hash && token) window.location.hash = `#${tokenName}=${encodeURIComponent(token)}`;
+    if (token) window.location.hash = `#${tokenName}=${encodeURIComponent(token)}`;
   }
   const callback = await handleAuthCallback();
-  const existingUser = await getUser();
-  if (existingUser) window.location.href = "/";
   if (callback?.type === "invite" || callback?.type === "recovery") {
     loginForm.hidden = true;
     passwordForm.hidden = false;
@@ -50,6 +50,8 @@ try {
     document.querySelector("#authDescription").textContent = callback.type === "invite"
       ? "A meghívó érvényes. Állítsd be a saját jelszavadat az aktiváláshoz."
       : "Állíts be egy új jelszót a fiókodhoz.";
+  } else if (await getUser()) {
+    window.location.href = "/";
   }
 } catch (error) {
   show(error.message || "A belépés nem érhető el.", "error");

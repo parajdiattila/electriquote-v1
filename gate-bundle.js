@@ -617,6 +617,7 @@ var AUTH_EVENTS = {
   USER_UPDATED: "user_updated",
   RECOVERY: "recovery"
 };
+var GOTRUE_STORAGE_KEY = "gotrue.user";
 var listeners = /* @__PURE__ */ new Set();
 var emitAuthEvent = (event, user) => {
   for (const listener of listeners) {
@@ -625,6 +626,32 @@ var emitAuthEvent = (event, user) => {
     } catch {
     }
   }
+};
+var storageListenerAttached = false;
+var attachStorageListener = () => {
+  if (storageListenerAttached || !isBrowser2()) return;
+  storageListenerAttached = true;
+  window.addEventListener("storage", (event) => {
+    if (event.key !== GOTRUE_STORAGE_KEY) return;
+    if (event.newValue) {
+      const client = getGoTrueClient();
+      const currentUser2 = client?.currentUser();
+      emitAuthEvent(AUTH_EVENTS.LOGIN, currentUser2 ? toUser(currentUser2) : null);
+    } else {
+      emitAuthEvent(AUTH_EVENTS.LOGOUT, null);
+    }
+  });
+};
+var onAuthChange = (callback) => {
+  if (!isBrowser2()) {
+    return () => {
+    };
+  }
+  listeners.add(callback);
+  attachStorageListener();
+  return () => {
+    listeners.delete(callback);
+  };
 };
 var REFRESH_MARGIN_S = 60;
 var refreshTimer = null;
@@ -818,13 +845,28 @@ var getUser = async () => {
 };
 
 // gate-app.js
+function loginUrl() {
+  const query = new URLSearchParams(window.location.search);
+  const tokenNames = ["invite_token", "recovery_token", "confirmation_token"];
+  const tokenName = tokenNames.find((name) => query.get(name));
+  const token = tokenName ? query.get(tokenName) : null;
+  const hash = tokenName && token ? `#${tokenName}=${encodeURIComponent(token)}` : window.location.hash;
+  return `/login.html${hash}`;
+}
+function requireLogin() {
+  document.documentElement.classList.remove("authorized");
+  window.location.replace(loginUrl());
+}
 try {
   const user = await getUser();
   if (!user) {
-    window.location.replace(`/login.html${window.location.hash}`);
+    requireLogin();
   } else {
     document.documentElement.classList.add("authorized");
+    onAuthChange((_event, currentUser2) => {
+      if (!currentUser2) requireLogin();
+    });
   }
 } catch {
-  window.location.replace("/login.html");
+  requireLogin();
 }
