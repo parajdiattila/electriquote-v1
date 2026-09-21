@@ -28911,6 +28911,10 @@ function openQuoteFile(file) {
 }
 
 function exportAppData() {
+  const localQuotes = archivedQuotes();
+  const exportedQuotes = Array.isArray(state.remoteQuotes) && state.remoteQuotes.length
+    ? state.remoteQuotes
+    : localQuotes;
   const payload = {
     app: "villany-arajanlat-app",
     version: 1,
@@ -28918,7 +28922,7 @@ function exportAppData() {
     language: state.lang,
     customItems: customItems(),
     customPackages: customPackages(),
-    archivedQuotes: archivedQuotes(),
+    archivedQuotes: exportedQuotes,
     savedQuote: JSON.parse(localStorage.getItem("villany-arajanlat-quote") || "null"),
     currentQuote: currentPayload(),
   };
@@ -28939,9 +28943,11 @@ function importAppData(file) {
       const payload = JSON.parse(String(reader.result || "{}"));
       if (payload.app !== "villany-arajanlat-app") throw new Error("wrong app");
 
+      const importedQuotes = Array.isArray(payload.archivedQuotes) ? payload.archivedQuotes : [];
       saveCustomItems(Array.isArray(payload.customItems) ? payload.customItems : []);
       saveCustomPackages(Array.isArray(payload.customPackages) ? payload.customPackages : []);
-      saveArchivedQuotes(Array.isArray(payload.archivedQuotes) ? payload.archivedQuotes : []);
+      saveArchivedQuotes(importedQuotes);
+      state.remoteQuotes = importedQuotes;
       if (payload.savedQuote) {
         localStorage.setItem("villany-arajanlat-quote", JSON.stringify(payload.savedQuote));
       }
@@ -28958,6 +28964,9 @@ function importAppData(file) {
       fillQuoteArchive();
       renderResults();
       renderQuote();
+      void Promise.all(importedQuotes.map((entry) => remoteQuotesRequest("POST", entry)))
+        .then(() => syncRemoteHistory())
+        .catch((error) => console.warn("Imported quote sync failed", error));
       flashButton(els.dataImportBtn, t("dataImported"));
     } catch {
       flashButton(els.dataImportBtn, t("dataImportError"));
