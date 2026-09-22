@@ -17,6 +17,19 @@ function requireLogin() {
 }
 
 try {
+  // Netlify places invite/recovery tokens in the URL hash. Keep these links
+  // on the auth page even if Identity has already created a temporary session;
+  // otherwise the app could open before the user sets a password.
+  const callbackNames = ["invite_token", "recovery_token", "confirmation_token"];
+  const hasCallbackToken = callbackNames.some((name) => {
+    const queryToken = new URLSearchParams(window.location.search).get(name);
+    const hashParams = new URLSearchParams(window.location.hash.replace(/^#/, ""));
+    return Boolean(queryToken || hashParams.get(name));
+  });
+  if (hasCallbackToken) {
+    requireLogin();
+    throw new Error("auth-callback");
+  }
   const user = await getUser();
   if (!user) {
     requireLogin();

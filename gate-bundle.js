@@ -858,6 +858,16 @@ function requireLogin() {
   window.location.replace(loginUrl());
 }
 try {
+  const callbackNames = ["invite_token", "recovery_token", "confirmation_token"];
+  const hasCallbackToken = callbackNames.some((name) => {
+    const queryToken = new URLSearchParams(window.location.search).get(name);
+    const hashParams = new URLSearchParams(window.location.hash.replace(/^#/, ""));
+    return Boolean(queryToken || hashParams.get(name));
+  });
+  if (hasCallbackToken) {
+    requireLogin();
+    throw new Error("auth-callback");
+  }
   const user = await getUser();
   if (!user) {
     requireLogin();
