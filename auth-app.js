@@ -1,4 +1,4 @@
-import { acceptInvite, getUser, handleAuthCallback, login, recoverPassword } from "@netlify/identity";
+import { acceptInvite, getUser, handleAuthCallback, login, updateUser } from "@netlify/identity";
 
 const loginForm = document.querySelector("#loginForm");
 const passwordForm = document.querySelector("#passwordForm");
@@ -59,7 +59,10 @@ passwordForm.addEventListener("submit", async (event) => {
     const token = passwordForm.dataset.token;
     if (passwordForm.password.value !== passwordForm.confirm.value) throw new Error("A két jelszó nem egyezik.");
     if (passwordForm.dataset.mode === "invite") await acceptInvite(token, passwordForm.password.value);
-    else await recoverPassword(token, passwordForm.password.value);
+    // handleAuthCallback() already redeems recovery tokens and creates the
+    // temporary authenticated session. Redeeming the same one again causes
+    // Netlify to report that the user cannot be found.
+    else await updateUser({ password: passwordForm.password.value });
     if (!(await getUser())) throw new Error("A fiók aktiválása sikerült, de a bejelentkezési munkamenet nem jött létre. Lépj be a beállított jelszóval.");
     window.location.href = "/";
   } catch (error) {

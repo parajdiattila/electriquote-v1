@@ -1007,18 +1007,18 @@ var getUser = async () => {
   const claims = identityContext?.user ?? null;
   return claims ? claimsToUser(claims) : null;
 };
-var recoverPassword = async (token, newPassword) => {
+var resolveCurrentUser = async () => {
   const client = getClient();
-  try {
-    const gotrueUser = await client.recover(token, persistSession);
-    const updatedUser = await gotrueUser.update({ password: newPassword });
-    const user = toUser(updatedUser);
-    startTokenRefresh();
-    emitAuthEvent(AUTH_EVENTS.LOGIN, user);
-    return user;
-  } catch (error) {
-    throw AuthError.from(error);
+  let currentUser2 = client.currentUser();
+  if (!currentUser2 && isBrowser2()) {
+    try {
+      await hydrateSession();
+    } catch {
+    }
+    currentUser2 = client.currentUser();
   }
+  if (!currentUser2) throw new AuthError("No user is currently logged in");
+  return currentUser2;
 };
 var acceptInvite = async (token, password) => {
   const client = getClient();
@@ -1027,6 +1027,17 @@ var acceptInvite = async (token, password) => {
     const user = toUser(gotrueUser);
     startTokenRefresh();
     emitAuthEvent(AUTH_EVENTS.LOGIN, user);
+    return user;
+  } catch (error) {
+    throw AuthError.from(error);
+  }
+};
+var updateUser = async (updates) => {
+  const currentUser2 = await resolveCurrentUser();
+  try {
+    const updatedUser = await currentUser2.update(updates);
+    const user = toUser(updatedUser);
+    emitAuthEvent(AUTH_EVENTS.USER_UPDATED, user);
     return user;
   } catch (error) {
     throw AuthError.from(error);
@@ -1123,7 +1134,7 @@ passwordForm.addEventListener("submit", async (event) => {
     const token = passwordForm.dataset.token;
     if (passwordForm.password.value !== passwordForm.confirm.value) throw new Error("A k\xE9t jelsz\xF3 nem egyezik.");
     if (passwordForm.dataset.mode === "invite") await acceptInvite(token, passwordForm.password.value);
-    else await recoverPassword(token, passwordForm.password.value);
+    else await updateUser({ password: passwordForm.password.value });
     if (!await getUser()) throw new Error("A fi\xF3k aktiv\xE1l\xE1sa siker\xFClt, de a bejelentkez\xE9si munkamenet nem j\xF6tt l\xE9tre. L\xE9pj be a be\xE1ll\xEDtott jelsz\xF3val.");
     window.location.href = "/";
   } catch (error) {
