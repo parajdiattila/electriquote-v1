@@ -25,7 +25,9 @@ export default async (request) => {
     } catch {
       return json({ error: "Bejelentkezés szükséges." }, 401);
     }
-    if (!user || (!user.roles?.includes("member") && !user.roles?.includes("admin") && user.role !== "admin")) {
+    // Every authenticated Identity user can use the shared quote history.
+    // Admin is only required for user management, not for reading or saving quotes.
+    if (!user) {
       return json({ error: "Bejelentkezés szükséges." }, 401);
     }
     if (request.method === "GET") {
